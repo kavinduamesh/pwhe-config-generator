@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cisco Interface Configuration Converter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+        <style>
+        :root {
+            --md-sys-color-primary: #6750a4;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-primary-container: #eaddff;
+            --md-sys-color-on-primary-container: #21005e;
+            --md-sys-color-secondary: #625b71;
+            --md-sys-color-on-secondary: #ffffff;
+            --md-sys-color-tertiary: #7d5260;
+            --md-sys-color-on-tertiary: #ffffff;
+            --md-sys-color-tertiary-container: #ffd8e4;
+            --md-sys-color-on-tertiary-container: #31111d;
+            --md-sys-color-surface: #fffbfe;
+            --md-sys-color-on-surface: #1c1b1f;
+            --md-sys-color-surface-variant: #e7e0ec;
+            --md-sys-color-on-surface-variant: #49454f;
+            --md-sys-color-outline: #79747e;
+            --md-sys-color-outline-variant: #cac4d0;
+            --md-sys-color-background: #fffbfe;
+            --md-sys-color-on-background: #1c1b1f;
+            --md-sys-color-error: #ba1a1a;
+            --md-sys-color-on-error: #ffffff;
+            --md-sys-color-error-container: #ffdad6;
+            --md-sys-color-on-error-container: #410002;
+            --md-sys-color-inverse-surface: #313033;
+            --md-sys-color-inverse-on-surface: #f4eff4;
+            --md-sys-color-inverse-primary: #d0bcff;
+            --md-sys-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
+            --md-sys-elevation-2: 0px 1px 2px 0px rgba(0, 0, 0, 0.30), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+            --md-sys-elevation-3: 0px 1px 3px 0px rgba(0, 0, 0, 0.30), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+            --md-sys-elevation-4: 0px 2px 4px 0px rgba(0, 0, 0, 0.30), 0px 7px 8px 4px rgba(0, 0, 0, 0.15);
+            --md-sys-elevation-5: 0px 4px 5px 0px rgba(0, 0, 0, 0.30), 0px 10px 15px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--md-sys-color-background);
+            min-height: 100vh;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--md-sys-color-on-background);
+            line-height: 1.6;
+        }
+
+        .main-container {
+            background: var(--md-sys-color-surface);
+            margin: 16px;
+            border-radius: 28px;
+            box-shadow: var(--md-sys-elevation-4);
+            overflow: hidden;
+            min-height: calc(100vh - 32px);
+        }
+
+        .header-section {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            padding: 32px 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-title {
+            font-size: 2.5rem;
+            font-weight: 400;
+            margin-bottom: 8px;
+            letter-spacing: -0.25px;
+        }
+
+        .header-subtitle {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+            font-weight: 400;
+        }
+        
+        .badge {
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .nav-tabs-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 8px;
+            margin: 16px 0;
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-tabs {
+            border: none;
+        }
+
+        .nav-tabs .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 20px;
+            padding: 12px 24px;
+            margin: 0 4px;
+            transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            font-weight: 500;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1px;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--md-sys-color-on-primary);
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .nav-tabs .nav-link.active {
+            background: rgba(255, 255, 255, 0.16);
+            color: var(--md-sys-color-on-primary);
+            box-shadow: var(--md-sys-elevation-1);
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--md-sys-elevation-1);
+            transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            overflow: hidden;
+            background: var(--md-sys-color-surface);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            margin-bottom: 24px;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--md-sys-elevation-3);
+        }
+
+        .card-header {
+            background: var(--md-sys-color-surface-variant);
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+            padding: 20px 24px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1px;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .btn {
+            border-radius: 20px;
+            padding: 12px 24px;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            border: none;
+            position: relative;
+            overflow: hidden;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1px;
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--md-sys-elevation-2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+        }
+
+        .btn-warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-info {
+            background: #00bcd4;
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--md-sys-color-error);
+            color: var(--md-sys-color-on-error);
+        }
+
+        .btn-secondary {
+            background: var(--md-sys-color-secondary);
+            color: var(--md-sys-color-on-secondary);
+        }
+
+        .btn-outline-primary {
+            border: 1px solid var(--md-sys-color-primary);
+            color: var(--md-sys-color-primary);
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .btn-outline-primary.active {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .btn-outline-secondary {
+            border: 1px solid var(--md-sys-color-secondary);
+            color: var(--md-sys-color-secondary);
+            background: transparent;
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--md-sys-color-secondary);
+            color: var(--md-sys-color-on-secondary);
+        }
+
+        .btn-outline-secondary.active {
+            background: var(--md-sys-color-secondary);
+            color: var(--md-sys-color-on-secondary);
+        }
+
+        .form-control {
+            border-radius: 4px;
+            border: 1px solid var(--md-sys-color-outline);
+            padding: 16px 12px;
+            transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            font-size: 0.875rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 3px rgba(103, 80, 164, 0.12);
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: var(--md-sys-color-outline);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface-variant);
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1px;
+        }
+
+        .form-text {
+            color: var(--md-sys-color-outline);
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+
+        .config-textarea {
+            font-family: 'Roboto Mono', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            resize: none;
+        }
+
+        .fixed-size-textarea {
+            height: 200px;
+        }
+
+        .large-textarea {
+            height: 400px;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            box-shadow: var(--md-sys-elevation-1);
+            padding: 16px;
+        }
+
+        .alert-success {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .alert-danger {
+            background: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+        }
+
+        .credit-footer {
+            background: var(--md-sys-color-inverse-surface);
+            color: var(--md-sys-color-inverse-on-surface);
+            padding: 32px 24px;
+            border-radius: 16px;
+            margin-top: 24px;
+            box-shadow: var(--md-sys-elevation-2);
+        }
+
+        .footer-divider {
+            height: 1px;
+            background: var(--md-sys-color-outline-variant);
+            margin: 24px 0;
+            opacity: 0.5;
+        }
+
+        .developer-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .developer-avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--md-sys-color-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--md-sys-elevation-1);
+        }
+
+        .developer-avatar i {
+            color: var(--md-sys-color-on-primary);
+            font-size: 1.25rem;
+        }
+
+        .developer-name {
+            color: var(--md-sys-color-outline);
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.1px;
+        }
+
+        .developer-title {
+            color: var(--md-sys-color-inverse-on-surface);
+            font-size: 1rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .github-link a {
+            color: var(--md-sys-color-outline);
+            text-decoration: none;
+            transition: color 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            font-size: 0.875rem;
+        }
+
+        .github-link a:hover {
+            color: var(--md-sys-color-primary);
+        }
+
+        .row {
+            margin: 0 -12px;
+        }
+
+        .col-md-6, .col-md-12, .col-12 {
+            padding: 0 12px;
+        }
+
+        .mb-3 {
+            margin-bottom: 24px !important;
+        }
+
+        .mb-2 {
+            margin-bottom: 16px !important;
+        }
+
+        .mt-2 {
+            margin-top: 16px !important;
+        }
+
+        .py-3 {
+            padding-top: 24px !important;
+            padding-bottom: 24px !important;
+        }
+
+        .p-2 {
+            padding: 16px !important;
+        }
+
+        .text-center {
+            text-align: center !important;
+        }
+
+        .d-flex {
+            display: flex !important;
+        }
+
+        .flex-wrap {
+            flex-wrap: wrap !important;
+        }
+
+        .gap-2 {
+            gap: 8px !important;
+        }
+
+        .align-items-center {
+            align-items: center !important;
+        }
+
+        .justify-content-center {
+            justify-content: center !important;
+        }
+
+        .w-100 {
+            width: 100% !important;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.75rem;
+            min-height: 32px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 8px;
+                border-radius: 20px;
+            }
+
+            .header-section {
+                padding: 24px 16px;
+            }
+
+            .header-title {
+                font-size: 2rem;
+            }
+
+            .card-body {
+                padding: 16px;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.8rem;
+            }
+
+            .credit-footer {
+                padding: 24px 16px;
+            }
+        }
+
+        /* Material 3 ripple effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .ripple:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+        </style>
+</head>
+<body>
+         <div class="container-fluid py-2">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="main-container">
+                    <!-- Header -->
+                    <div class="header-section">
+                        <div class="header-content">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h1 class="header-title">
+                                        <i class="fas fa-network-wired me-2"></i>PW-HE Config Generator
+                                    </h1>
+                                    <p class="header-subtitle">Convert Metro interfaces to PW-Ether format</p>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary" id="accessLevelBadge">
+                                        <i class="fas fa-user me-1"></i>
+                                        <span id="accessLevelText">Admin</span>
+                                    </span>
+                                    <button type="button" class="btn btn-outline-danger btn-sm ripple" onclick="logout()" title="Logout">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                         
+                                                  <!-- Navigation Tabs -->
+                          <div class="nav-tabs-container mt-2">
+                             <ul class="nav nav-tabs nav-fill" id="mainTabs" role="tablist">
+                                 <li class="nav-item" role="presentation">
+                                     <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">
+                                         <i class="fas fa-cog me-2"></i>General
+                                     </button>
+                                 </li>
+                             </ul>
+                         </div>
+                    </div>
+
+                                                              <!-- Main Content -->
+                      <div class="p-2">
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="mainTabsContent">
+                            <!-- General Tab -->
+                            <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                                                         <!-- Selection Options -->
+                         <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <i class="fas fa-list me-2"></i>Configuration Options
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- PW-HE BE Options -->
+                                                                                 <div class="mb-3">
+                                            <label class="form-label fw-bold">
+                                                <i class="fas fa-network-wired me-1"></i>1. New PW-HE BE
+                                            </label>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <button type="button" class="btn btn-outline-primary ripple" data-option="pili-mala">
+                                                    <i class="fas fa-check-circle me-1"></i>a. PILI-1 and MALA_10K-2
+                                                </button>
+                                                <button type="button" class="btn btn-outline-primary ripple" data-option="mala-kada">
+                                                    <i class="fas fa-check-circle me-1"></i>b. MALA_10K-1 and KADA-2
+                                                </button>
+                                                <button type="button" class="btn btn-outline-primary ripple" data-option="kada-pili">
+                                                    <i class="fas fa-check-circle me-1"></i>c. KADA-1 and PILI-2
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Huawei CSR Model Options -->
+                                                                                 <div class="mb-2">
+                                             <label class="form-label fw-bold">
+                                                 <i class="fas fa-server me-1"></i>2. Huawei CSR Model
+                                             </label>
+                                             <div class="d-flex flex-wrap gap-2">
+                                                 <button type="button" class="btn btn-outline-secondary ripple" data-model="ATN910C-G">
+                                                     <i class="fas fa-check-circle me-1"></i>ATN910C-G
+                                                 </button>
+                                                 <button type="button" class="btn btn-outline-secondary ripple" data-model="ATN910C-D">
+                                                     <i class="fas fa-check-circle me-1"></i>ATN910C-D
+                                                 </button>
+                                                 <button type="button" class="btn btn-outline-secondary ripple" data-model="ATN910D-A">
+                                                     <i class="fas fa-check-circle me-1"></i>ATN910D-A
+                                                 </button>
+                                                 <button type="button" class="btn btn-outline-secondary ripple" data-model="ATN950C">
+                                                     <i class="fas fa-check-circle me-1"></i>ATN950C
+                                                 </button>
+                                                 <button type="button" class="btn btn-outline-secondary ripple" data-model="ATN950B">
+                                                     <i class="fas fa-check-circle me-1"></i>ATN950B
+                                                 </button>
+                                                 <button type="button" class="btn btn-outline-secondary ripple" data-model="ATN910I-TC-DC">
+                                                     <i class="fas fa-check-circle me-1"></i>ATN910I-TC DC
+                                                 </button>
+                                             </div>
+                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                                                 <!-- Input Form -->
+                         <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="fas fa-cog me-2"></i>Configuration Settings
+                                    </div>
+                                    <div class="card-body">
+                                                                                 <div class="mb-2">
+                                             <label for="pwEtherId" class="form-label">
+                                                 <i class="fas fa-hashtag me-1"></i>PW-Ether ID
+                                             </label>
+                                             <input type="text" class="form-control" id="pwEtherId" 
+                                                    placeholder="e.g., 10239">
+                                             <div class="form-text">Enter the base PW-Ether interface ID</div>
+                                         </div>
+                                         
+                                         <div class="mb-2">
+                                             <label for="csrIp" class="form-label">
+                                                 <i class="fas fa-network-wired me-1"></i>CSR IP (Loopback0)
+                                             </label>
+                                             <input type="text" class="form-control" id="csrIp" 
+                                                    placeholder="e.g., 10.24.3.28">
+                                             <div class="form-text">Enter the CSR Loopback0 IP address</div>
+                                         </div>
+                                         
+                                         <div class="mb-2">
+                                             <label for="cxName" class="form-label">
+                                                 <i class="fas fa-building me-1"></i>CX Name
+                                             </label>
+                                             <input type="text" class="form-control" id="cxName" 
+                                                    placeholder="e.g., CONNAISSANCE_DE_CEYLAN">
+                                             <div class="form-text">Enter the company name for the description</div>
+                                         </div>
+                                         
+                                         <div class="mb-2">
+                                             <label for="cxLocation" class="form-label">
+                                                 <i class="fas fa-map-marker-alt me-1"></i>CX Location
+                                             </label>
+                                             <input type="text" class="form-control" id="cxLocation" 
+                                                    placeholder="e.g., COL_6">
+                                             <div class="form-text">Enter the CSR name/location for the description</div>
+                                         </div>
+                                        
+                                        <div class="mb-2">
+                                            <label class="form-label">
+                                                <i class="fas fa-info-circle me-1"></i>Conversion Rules
+                                            </label>
+                                            <ul class="list-unstyled small text-muted">
+                                                <li><i class="fas fa-arrow-right me-1"></i>GigabitEthernet/TenGigE → PW-Ether</li>
+                                                <li><i class="fas fa-arrow-right me-1"></i>Add shutdown command</li>
+                                                <li><i class="fas fa-arrow-right me-1"></i>Remove second-dot1q from encapsulation</li>
+                                                <li><i class="fas fa-arrow-right me-1"></i>Change rewrite pop 2 → pop 1</li>
+                                                <li><i class="fas fa-arrow-right me-1"></i>Keep service-policy output as-is</li>
+                                            </ul>
+                                        </div>
+
+                                        <button type="button" class="btn btn-warning w-100 ripple" onclick="convertConfig()" id="convertBtn">
+                                            <span class="loading">
+                                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                Converting...
+                                            </span>
+                                            <span class="normal">
+                                                <i class="fas fa-exchange-alt me-2"></i>Convert Configuration
+                                            </span>
+                                        </button>
+                                        
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-success w-100 ripple" onclick="generateFinalConfig()" id="generateBtn">
+                                                <i class="fas fa-magic me-2"></i>Generate Final Configuration
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-info w-100 ripple" onclick="generateAndDownload()" id="downloadBtn">
+                                                <i class="fas fa-download me-2"></i>Generate & Download Configuration
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-danger w-100 ripple" onclick="clearAllInputs()" id="clearBtn">
+                                                <i class="fas fa-trash me-2"></i>Clear All
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-warning w-100 ripple" onclick="debugInterfaceParsing()" id="debugBtn">
+                                                <i class="fas fa-bug me-2"></i>Debug Interface Parsing
+                                            </button>
+                                        </div>
+                                     </div>
+                                 </div>
+                             </div>
+                             
+                                                          <div class="col-md-6">
+                                 <div class="card h-100">
+                                     <div class="card-header">
+                                         <i class="fas fa-upload me-2"></i>Configuration Input
+                                     </div>
+                                     <div class="card-body">
+                                         <!-- Existing CSR Interface Configuration -->
+                                         <div class="mb-2">
+                                             <label for="existingCsrConfig" class="form-label fw-bold">
+                                                 <i class="fas fa-server me-1"></i>Existing CSR Interface Configuration
+                                             </label>
+                                                                                          <textarea class="form-control config-textarea fixed-size-textarea" id="existingCsrConfig" 
+                                                        placeholder="Paste your existing CSR interface configuration here...&#10;&#10;Example:&#10;interface GigabitEthernet0/2/8.1176 mode l2&#10;mtu 9000&#10;description CX_PW:10.24.1.129:Gi6/0/3&#10;statistic enable mode single&#10;encapsulation default&#10;mpls l2vc 10.24.1.129 300176 raw&#10;mpls l2vpn pw traffic-statistics enable"></textarea>
+                                             <div class="form-text">This configuration will be processed to add 'undo' commands</div>
+                                         </div>
+                                         
+                                         <!-- Old Configuration -->
+                                         <div class="mb-2">
+                                             <label for="oldConfig" class="form-label fw-bold">
+                                                 <i class="fas fa-exchange-alt me-1"></i>Old Configuration (to Convert)
+                                             </label>
+                                                                                          <textarea class="form-control config-textarea fixed-size-textarea" id="oldConfig" 
+                                                        placeholder="Paste your old Cisco interface configuration here..."></textarea>
+                                             <div class="form-text">This configuration will be converted to PW-Ether format</div>
+                                         </div>
+                                         
+
+                                     </div>
+                                 </div>
+                             </div>
+                        </div>
+
+                                                 <!-- Configuration Areas -->
+                         <div class="row mb-1">
+                             <div class="col-md-6">
+                                 <div class="card">
+                                     <div class="card-header d-flex justify-content-between align-items-center">
+                                         <span><i class="fas fa-download me-2"></i>New Configuration</span>
+                                         <button type="button" class="btn btn-sm btn-secondary ripple" onclick="copyToClipboard()">
+                                             <i class="fas fa-copy me-1"></i>Copy
+                                         </button>
+                                     </div>
+                                     <div class="card-body">
+                                         <textarea class="form-control config-textarea large-textarea" id="newConfig" 
+                                                   placeholder="Converted configuration will appear here..." readonly></textarea>
+                                     </div>
+                                 </div>
+                             </div>
+
+                                                           <div class="col-md-6">
+                                  <div class="card">
+                                      <div class="card-header d-flex justify-content-between align-items-center">
+                                          <span><i class="fas fa-file-code me-2"></i>Final Configuration Output</span>
+                                          <button type="button" class="btn btn-sm btn-secondary ripple" onclick="copyFinalConfigToClipboard()">
+                                              <i class="fas fa-copy me-1"></i>Copy
+                                          </button>
+                                      </div>
+                                      <div class="card-body">
+                                          <div class="mb-2">
+                                              <div class="alert alert-info">
+                                                  <i class="fas fa-info-circle me-2"></i>
+                                                  <strong>Note:</strong> Select your PW-HE BE and Huawei CSR Model options above, enter the existing CSR configuration and old configuration to convert, then click "Generate Final Config" to create the complete configuration file.
+                                              </div>
+                                          </div>
+                                          <textarea class="form-control config-textarea large-textarea" id="finalConfig" 
+                                                    placeholder="Final configuration with all settings will appear here..." readonly></textarea>
+
+                                      </div>
+                                  </div>
+                              </div>
+                                                                            </div>
+                          
+
+                         
+                         <!-- Credit Footer -->
+                         <div class="credit-footer mt-2 text-center">
+                             <div class="footer-divider"></div>
+                             <div class="developer-info">
+                                 <div class="developer-avatar">
+                                     <i class="fas fa-code"></i>
+                                 </div>
+                                 <div class="developer-details">
+                                     <h5 class="developer-name">Developed By</h5>
+                                     <h4 class="developer-title">Kavindu_Rankothge</h4>
+                                     <div class="github-link">
+                                         <a href="https://github.com/kavinduamesh" target="_blank" rel="noopener noreferrer">
+                                             <i class="fab fa-github me-2"></i>
+                                             github/kavinduamesh
+                                         </a>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+
+                                                 <!-- Alert Messages -->
+                         <div id="alertContainer" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Authentication check
+        if (sessionStorage.getItem('authenticated') !== 'true') {
+            window.location.href = '/login';
+        }
+        
+        // Session timeout check (8 hours)
+        const loginTime = sessionStorage.getItem('loginTime');
+        const currentTime = Date.now();
+        const sessionTimeout = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+        
+        if (loginTime && (currentTime - parseInt(loginTime)) > sessionTimeout) {
+            sessionStorage.clear();
+            window.location.href = '/login';
+        }
+        
+        // Display access level
+        const accessLevel = sessionStorage.getItem('accessLevel');
+        if (accessLevel) {
+            const accessLevelText = document.getElementById('accessLevelText');
+            if (accessLevelText) {
+                accessLevelText.textContent = accessLevel;
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = '/login';
+        }
+        
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            alertContainer.innerHTML = alertHtml;
+        }
+
+        function setLoading(loading) {
+            const button = document.querySelector('button[onclick="convertConfig()"]');
+            if (!button) return;
+            
+            const loadingSpan = button.querySelector('.loading');
+            const normalSpan = button.querySelector('.normal');
+            
+            if (loading) {
+                loadingSpan.style.display = 'inline';
+                normalSpan.style.display = 'none';
+                button.disabled = true;
+            } else {
+                loadingSpan.style.display = 'none';
+                normalSpan.style.display = 'inline';
+                button.disabled = false;
+            }
+        }
+
+        async function convertConfig() {
+            console.log('convertConfig function called!');
+            const oldConfig = document.getElementById('oldConfig').value.trim();
+            const pwEtherId = document.getElementById('pwEtherId').value.trim();
+            const newConfigTextarea = document.getElementById('newConfig');
+
+            console.log('Old config:', oldConfig);
+            console.log('PW-Ether ID:', pwEtherId);
+
+            if (!oldConfig) {
+                showAlert('Please enter the old configuration', 'warning');
+                return;
+            }
+
+            if (!pwEtherId) {
+                showAlert('Please enter the PW-Ether ID', 'warning');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        old_config: oldConfig,
+                        pw_ether_id: pwEtherId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    newConfigTextarea.value = data.new_config;
+                    showAlert('Configuration converted successfully!', 'success');
+                } else {
+                    showAlert(data.error || 'Conversion failed', 'danger');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'danger');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+                 function copyToClipboard() {
+             const newConfig = document.getElementById('newConfig');
+             if (newConfig.value.trim()) {
+                 navigator.clipboard.writeText(newConfig.value).then(() => {
+                     showAlert('Configuration copied to clipboard!', 'success');
+                 }).catch(() => {
+                     showAlert('Failed to copy to clipboard', 'warning');
+                 });
+             } else {
+                 showAlert('No configuration to copy', 'warning');
+             }
+         }
+         
+         function copyFinalConfigToClipboard() {
+             const finalConfig = document.getElementById('finalConfig');
+             if (finalConfig.value.trim()) {
+                 navigator.clipboard.writeText(finalConfig.value).then(() => {
+                     showAlert('Final configuration copied to clipboard!', 'success');
+                 }).catch(() => {
+                     showAlert('Failed to copy to clipboard', 'warning');
+                 });
+             } else {
+                 showAlert('No final configuration to copy', 'warning');
+             }
+         }
+         
+                   function clearAllInputs() {
+              // Clear all input fields
+              document.getElementById('pwEtherId').value = '';
+              document.getElementById('csrIp').value = '';
+              document.getElementById('cxName').value = '';
+              document.getElementById('cxLocation').value = '';
+              document.getElementById('existingCsrConfig').value = '';
+              document.getElementById('oldConfig').value = '';
+              document.getElementById('staticRouteInput').value = '';
+              
+              // Clear all output textareas
+              document.getElementById('newConfig').value = '';
+              document.getElementById('finalConfig').value = '';
+              document.getElementById('convertedRoutes').value = '';
+              
+              // Reset button selections
+              const pwheButtons = document.querySelectorAll('[data-option]');
+              const huaweiButtons = document.querySelectorAll('[data-model]');
+              
+              pwheButtons.forEach(btn => {
+                  btn.classList.remove('btn-primary');
+                  btn.classList.add('btn-outline-primary');
+              });
+              
+              huaweiButtons.forEach(btn => {
+                  btn.classList.remove('btn-secondary');
+                  btn.classList.add('btn-outline-secondary');
+              });
+              
+              showAlert('All inputs and outputs cleared successfully!', 'success');
+          }
+
+        // Auto-resize textareas (excluding fixed-size and large ones)
+        document.addEventListener('DOMContentLoaded', function() {
+            const textareas = document.querySelectorAll('.config-textarea:not(.fixed-size-textarea):not(.large-textarea)');
+            textareas.forEach(textarea => {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.max(300, this.scrollHeight) + 'px';
+                });
+            });
+
+            // Button selection functionality
+            const pwheButtons = document.querySelectorAll('[data-option]');
+            const huaweiButtons = document.querySelectorAll('[data-model]');
+
+            // PW-HE BE button selection (only one can be selected)
+            pwheButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    console.log('PW-HE button clicked:', this.getAttribute('data-option'));
+                    // Remove active class from all PW-HE buttons
+                    pwheButtons.forEach(btn => {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-outline-primary');
+                    });
+                    // Add active class to clicked button
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-primary');
+                    console.log('Button classes after click:', this.className);
+                });
+            });
+
+            // Huawei CSR Model button selection (only one can be selected)
+            huaweiButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    console.log('Huawei button clicked:', this.getAttribute('data-model'));
+                    // Remove active class from all Huawei buttons
+                    huaweiButtons.forEach(btn => {
+                        btn.classList.remove('btn-secondary');
+                        btn.classList.add('btn-outline-secondary');
+                    });
+                    // Add active class to clicked button
+                    this.classList.remove('btn-outline-secondary');
+                    this.classList.add('btn-secondary');
+                    console.log('Button classes after click:', this.className);
+                });
+            });
+
+            // Add event listener to Generate Final Config button
+            const generateBtn = document.getElementById('generateBtn');
+            if (generateBtn) {
+                generateBtn.addEventListener('click', function() {
+                    console.log('Generate Final Config button clicked!');
+                    generateFinalConfig();
+                });
+            }
+
+            // Add event listener to Convert Configuration button
+            const convertBtn = document.getElementById('convertBtn');
+            if (convertBtn) {
+                convertBtn.addEventListener('click', function() {
+                    console.log('Convert Configuration button clicked!');
+                    convertConfig();
+                });
+            }
+        });
+
+        function getSelectedPwheOption() {
+            const selectedButton = document.querySelector('[data-option].btn-primary');
+            console.log('PW-HE selected button:', selectedButton);
+            return selectedButton ? selectedButton.getAttribute('data-option') : null;
+        }
+
+        function getSelectedHuaweiModel() {
+            const selectedButton = document.querySelector('[data-model].btn-secondary');
+            console.log('Huawei selected button:', selectedButton);
+            return selectedButton ? selectedButton.getAttribute('data-model') : null;
+        }
+
+        function getPwheIpAddresses(option) {
+            const ipMappings = {
+                'pili-mala': { primary: '10.24.3.24', secondary: '10.24.3.27' },
+                'mala-kada': { primary: '10.24.3.26', secondary: '10.24.3.29' },
+                'kada-pili': { primary: '10.24.3.28', secondary: '10.24.3.25' }
+            };
+            return ipMappings[option] || { primary: '', secondary: '' };
+        }
+
+        function getPwheName(option) {
+            const nameMappings = {
+                'pili-mala': 'PILI-1 and MALA_10K-2',
+                'mala-kada': 'MALA_10K-1 and KADA-2',
+                'kada-pili': 'KADA-1 and PILI-2'
+            };
+            return nameMappings[option] || '';
+        }
+
+        function getTrafficBehavior(model) {
+            const models = ['ATN910C-G', 'ATN910C-D', 'ATN910D-A', 'ATN950C'];
+            if (models.includes(model)) {
+                return 'traffic behavior 250M_CX_POLICY_IN\n car cir 250000 pir 250000 cbs 4294967295 pbs 4294967295 green pass yellow pass red discard';
+            } else if (['ATN950B', 'ATN910I-TC-DC'].includes(model)) {
+                return 'traffic behavior 250M_CX_POLICY_IN\n car cir  250000  pir 250000  cbs  10000000 pbs 10000000 green pass yellow pass red discard';
+            }
+            return '';
+        }
+
+        async function generateFinalConfig() {
+            const selectedPwhe = getSelectedPwheOption();
+            const selectedModel = getSelectedHuaweiModel();
+            const newConfig = document.getElementById('newConfig').value.trim();
+            const pwEtherId = document.getElementById('pwEtherId').value.trim();
+            const csrIp = document.getElementById('csrIp').value.trim();
+            const oldConfig = document.getElementById('oldConfig').value.trim();
+            const existingCsrConfig = document.getElementById('existingCsrConfig').value.trim();
+
+            console.log('Selected PW-HE:', selectedPwhe);
+            console.log('Selected Model:', selectedModel);
+            console.log('New Config:', newConfig);
+            console.log('PW-Ether ID:', pwEtherId);
+
+            if (!selectedPwhe) {
+                showAlert('Please select a PW-HE BE option', 'warning');
+                return;
+            }
+
+            if (!selectedModel) {
+                showAlert('Please select a Huawei CSR Model', 'warning');
+                return;
+            }
+
+            if (!pwEtherId) {
+                showAlert('Please enter the PW-Ether ID', 'warning');
+                return;
+            }
+
+            if (!csrIp) {
+                showAlert('Please enter the CSR IP address', 'warning');
+                return;
+            }
+
+            if (!oldConfig) {
+                showAlert('Please enter the old configuration', 'warning');
+                return;
+            }
+
+            if (!existingCsrConfig) {
+                showAlert('Please enter the existing CSR interface configuration', 'warning');
+                return;
+            }
+
+            // If no converted configuration exists, automatically convert first
+            if (!newConfig) {
+                console.log('No converted configuration found. Auto-converting...');
+                showAlert('Auto-converting configuration first...', 'info');
+                
+                try {
+                    await convertConfig();
+                    // Wait a moment for the conversion to complete
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    // Get the newly converted configuration
+                    const updatedNewConfig = document.getElementById('newConfig').value.trim();
+                    if (!updatedNewConfig) {
+                        showAlert('Auto-conversion failed. Please try converting manually first.', 'danger');
+                        return;
+                    }
+                } catch (error) {
+                    showAlert('Auto-conversion failed: ' + error.message, 'danger');
+                    return;
+                }
+            }
+
+            const ipAddresses = getPwheIpAddresses(selectedPwhe);
+            const trafficBehavior = getTrafficBehavior(selectedModel);
+            
+            // Calculate PW IDs based on model
+            const basePwId = pwEtherId + '0'; // Primary PW ID (add 0 at end)
+            let secondaryPwId;
+            
+            // For ATN950B and ATN910I-TC-DC models, secondary PW ID adds 1 at end
+            if (['ATN950B', 'ATN910I-TC-DC'].includes(selectedModel)) {
+                secondaryPwId = pwEtherId + '1'; // Secondary PW ID (add 1 at end)
+            } else {
+                secondaryPwId = basePwId; // For other models, same PW ID for both
+            }
+
+            // Get the current newConfig (might have been updated by auto-conversion)
+            const currentNewConfig = document.getElementById('newConfig').value.trim();
+
+            // Get PW-HE BE name
+            const pwheName = getPwheName(selectedPwhe);
+            
+            // Format PW ID for display (show both if different)
+            let pwIdDisplay;
+            if (['ATN950B', 'ATN910I-TC-DC'].includes(selectedModel)) {
+                pwIdDisplay = `${basePwId} / ${secondaryPwId}`;
+            } else {
+                pwIdDisplay = basePwId;
+            }
+
+            // Build the final configuration
+            let finalConfig = `#############################################################################################################
+
+CSR IP : ${csrIp}
+
+PWHE BE : ${pwheName}
+
+PWHE Primary : ${ipAddresses.primary}
+
+PWHE Secondary : ${ipAddresses.secondary}
+
+PE : ${pwEtherId}
+
+PW_ID : ${pwIdDisplay}
+
+############################################################################################################
+
+diffserv domain ENT_NQOS
+ 8021p-inbound 0 phb af1 green
+ 8021p-inbound 2 phb af1 green
+ 8021p-inbound 3 phb af1 green
+ 8021p-inbound 4 phb af1 green
+ 8021p-inbound 5 phb af1 green
+ 8021p-inbound 6 phb af1 green
+ 8021p-inbound 7 phb af1 green
+
+traffic classifier MATCH_ANY operator or 
+if-match  any
+
+${trafficBehavior}
+
+traffic policy 250M_CX_POLICY_IN 
+ undo share-mode
+ statistics enable
+ classifier MATCH_ANY behavior 250M_CX_POLICY_IN
+
+mpls ldp remote-peer ${ipAddresses.primary}
+ remote-ip ${ipAddresses.primary}
+
+mpls ldp remote-peer ${ipAddresses.secondary}
+ remote-ip ${ipAddresses.secondary}
+
+
+${processExistingCsrConfig(existingCsrConfig)}
+
+
+description CX_PW:ACTIVE_${ipAddresses.primary}:BACKUP_${ipAddresses.secondary}
+statistic enable mode single
+mpls l2vpn pw traffic-statistics enable
+trust upstream ENT_NQOS
+trust 8021p
+traffic-policy 250M_CX_POLICY_IN inbound
+mpls l2vc ${ipAddresses.primary} ${basePwId} raw
+mpls l2vc ${ipAddresses.secondary} ${secondaryPwId} raw secondary
+mpls l2vpn redundancy master
+
+
+
+
+######################################### [PW-HE BE Configuration ] ###################################################
+
+${generatePwEtherInterfaceConfig()}
+
+${generateBridgeConfig()}
+
+${currentNewConfig}
+
+${generateVerificationCommands()}`;
+
+            const finalConfigTextarea = document.getElementById('finalConfig');
+            finalConfigTextarea.value = finalConfig;
+            showAlert('Final configuration generated successfully!', 'success');
+        }
+
+        async function generateAndDownload() {
+            // First generate the final configuration
+            await generateFinalConfig();
+            
+            // Wait a moment for the generation to complete
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Then download it
+            const finalConfig = document.getElementById('finalConfig').value;
+            if (!finalConfig.trim()) {
+                showAlert('No configuration to download', 'warning');
+                return;
+            }
+
+            const blob = new Blob([finalConfig], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cisco_final_configuration.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showAlert('Configuration generated and downloaded successfully!', 'success');
+        }
+
+        function downloadFinalConfig() {
+            const finalConfig = document.getElementById('finalConfig').value;
+            if (!finalConfig.trim()) {
+                showAlert('No configuration to download', 'warning');
+                return;
+            }
+
+            const blob = new Blob([finalConfig], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cisco_final_configuration.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showAlert('Configuration file downloaded successfully!', 'success');
+        }
+
+        // Debug function to test button selection
+        function debugButtonSelection() {
+            console.log('=== DEBUG BUTTON SELECTION ===');
+            console.log('All PW-HE buttons:', document.querySelectorAll('[data-option]'));
+            console.log('All Huawei buttons:', document.querySelectorAll('[data-model]'));
+            console.log('Selected PW-HE button:', document.querySelector('[data-option].btn-primary'));
+            console.log('Selected Huawei button:', document.querySelector('[data-model].btn-secondary'));
+            console.log('PW-HE button classes:');
+            document.querySelectorAll('[data-option]').forEach(btn => {
+                console.log(btn.getAttribute('data-option'), ':', btn.className);
+            });
+            console.log('Huawei button classes:');
+            document.querySelectorAll('[data-model]').forEach(btn => {
+                console.log(btn.getAttribute('data-model'), ':', btn.className);
+            });
+        }
+        
+        // Debug function to test interface parsing
+        function debugInterfaceParsing() {
+            console.log('=== DEBUG INTERFACE PARSING ===');
+            const oldConfig = document.getElementById('oldConfig').value.trim();
+            console.log('Old config content:', oldConfig);
+            
+            if (!oldConfig) {
+                console.log('No old config found');
+                return;
+            }
+            
+            const lines = oldConfig.split('\n');
+            console.log('Total lines:', lines.length);
+            
+            let currentInterface = null;
+            let currentVrf = null;
+            let currentIp = null;
+            let currentSubnet = null;
+            const interfaceConfigs = [];
+            
+            lines.forEach((line, index) => {
+                const trimmedLine = line.trim();
+                console.log(`Line ${index + 1}: "${trimmedLine}"`);
+                
+                if (trimmedLine.startsWith('interface ')) {
+                    console.log('  -> Interface line detected');
+                    if (currentInterface && currentVrf && currentIp) {
+                        interfaceConfigs.push({
+                            interface: currentInterface,
+                            vrf: currentVrf,
+                            ip: currentIp,
+                            subnet: currentSubnet
+                        });
+                        console.log('  -> Saved previous config:', { interface: currentInterface, vrf: currentVrf, ip: currentIp, subnet: currentSubnet });
+                    }
+                    
+                    const match = trimmedLine.match(/interface\s+(GigabitEthernet|TenGigE|Tengig)(\d+\/\d+\/\d+\/\d+)\.(\d+)(\s+l2transport)?/);
+                    if (match) {
+                        currentInterface = match[2] + '.' + match[3];
+                        currentVrf = null;
+                        currentIp = null;
+                        currentSubnet = null;
+                        console.log('  -> New interface:', currentInterface);
+                    } else {
+                        console.log('  -> No match found for interface line');
+                    }
+                } else if (trimmedLine.startsWith('vrf ')) {
+                    currentVrf = trimmedLine.replace('vrf ', '').trim();
+                    console.log('  -> VRF found:', currentVrf);
+                } else if (trimmedLine.startsWith('ipv4 address ')) {
+                    const ipMatch = trimmedLine.match(/ipv4 address (\d+\.\d+\.\d+\.\d+) (\d+\.\d+\.\d+\.\d+)/);
+                    if (ipMatch) {
+                        currentIp = ipMatch[1];
+                        currentSubnet = ipMatch[2];
+                        console.log('  -> IP found:', currentIp, 'Subnet:', currentSubnet);
+                    } else {
+                        console.log('  -> No IP match found');
+                    }
+                }
+            });
+            
+            if (currentInterface && currentVrf && currentIp) {
+                interfaceConfigs.push({
+                    interface: currentInterface,
+                    vrf: currentVrf,
+                    ip: currentIp,
+                    subnet: currentSubnet
+                });
+                console.log('  -> Saved last config:', { interface: currentInterface, vrf: currentVrf, ip: currentIp, subnet: currentSubnet });
+            }
+            
+            console.log('Final interface configs:', interfaceConfigs);
+            console.log('Total configs found:', interfaceConfigs.length);
+        }
+
+        // Test function to verify everything is working
+        function testAllFunctions() {
+            console.log('=== TESTING ALL FUNCTIONS ===');
+            console.log('convertConfig function:', typeof convertConfig);
+            console.log('generateFinalConfig function:', typeof generateFinalConfig);
+            console.log('Convert button:', document.getElementById('convertBtn'));
+            console.log('Generate button:', document.getElementById('generateBtn'));
+            console.log('Old config textarea:', document.getElementById('oldConfig'));
+            console.log('New config textarea:', document.getElementById('newConfig'));
+            console.log('Final config textarea:', document.getElementById('finalConfig'));
+        }
+
+        function processExistingCsrConfig(csrConfig) {
+            if (!csrConfig.trim()) return '';
+            
+            const lines = csrConfig.split('\n');
+            const processedLines = [];
+            
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+                // Check if line contains "mpls l2vc" command
+                if (trimmedLine.includes('mpls l2vc')) {
+                    // Add "undo" at the beginning of the line
+                    const undoLine = 'undo ' + trimmedLine;
+                    processedLines.push(undoLine);
+                } else {
+                    // Keep the line as is
+                    processedLines.push(line);
+                }
+            });
+            
+            return processedLines.join('\n');
+        }
+
+        function generatePwEtherInterfaceConfig() {
+            const pwEtherId = document.getElementById('pwEtherId').value.trim();
+            const cxName = document.getElementById('cxName').value.trim();
+            const cxLocation = document.getElementById('cxLocation').value.trim();
+            
+            if (!pwEtherId || !cxName || !cxLocation) return '';
+            
+            // Get MTU from the Existing CSR Interface Configuration and add 14
+            const existingCsrConfig = document.getElementById('existingCsrConfig').value.trim();
+            let mtu = 1514; // Default MTU (1500 + 14)
+            
+            if (existingCsrConfig) {
+                const lines = existingCsrConfig.split('\n');
+                for (let line of lines) {
+                    const trimmedLine = line.trim();
+                    if (trimmedLine.startsWith('mtu ')) {
+                        const csrMtu = parseInt(trimmedLine.replace('mtu ', '').trim());
+                        if (!isNaN(csrMtu)) {
+                            mtu = csrMtu + 14; // Add 14 to CSR MTU
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            // Generate PW-Ether interface configuration
+            let config = `interface PW-Ether ${pwEtherId}\n`;
+            config += `description ${cxName}:${cxLocation}:NA\n`;
+            config += `mtu ${mtu}\n`;
+            config += `bandwidth 1000000\n`;
+            config += `attach generic-interface-list PWHE\n`;
+            config += `!\n\n`;
+            
+            // Add L2VPN xconnect configuration
+            config += `l2vpn\n`;
+            config += `xconnect group PW_HE\n`;
+            config += `  p2p ${pwEtherId}\n`;
+            config += `  interface PW-Ether ${pwEtherId}\n`;
+            config += `  neighbor ipv4 ${document.getElementById('csrIp').value.trim()} pw-id ${pwEtherId}0\n`;
+            config += `    pw-class  MPLS_ETH_E\n`;
+            config += `!\n`;
+            
+            return config;
+        }
+
+        function generateBridgeConfig() {
+            const oldConfig = document.getElementById('oldConfig').value.trim();
+            const pwEtherId = document.getElementById('pwEtherId').value.trim();
+            
+            if (!oldConfig || !pwEtherId) return '';
+            
+            const lines = oldConfig.split('\n');
+            const specialCtags = [];
+            
+            // Check for interfaces with ctags 502 or 504
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+                if (trimmedLine.startsWith('interface ')) {
+                    const match = trimmedLine.match(/interface\s+(GigabitEthernet|TenGigE|Tengig)\d+\/\d+\/\d+\/\d+\.(\d+)(\s+l2transport)?/);
+                    if (match) {
+                        const subinterfaceNum = match[2];
+                        // Extract only the last 3 digits
+                        const ctag = subinterfaceNum.length > 3 ? subinterfaceNum.slice(-3) : subinterfaceNum;
+                        
+                        if (ctag === '502' || ctag === '504') {
+                            specialCtags.push({
+                                ctag: ctag,
+                                originalInterface: trimmedLine,
+                                newInterface: `PW-Ether ${pwEtherId}.${ctag}`
+                            });
+                        }
+                    }
+                }
+            });
+            
+            if (specialCtags.length === 0) return '';
+            
+            // Generate bridge configuration
+            let bridgeConfig = 'l2vpn\n bridge group D_NET';
+            
+            specialCtags.forEach(ctagInfo => {
+                bridgeConfig += `\n  bridge-domain ME_DNET_${ctagInfo.ctag}`;
+                bridgeConfig += `\n   interface ${ctagInfo.newInterface}`;
+                bridgeConfig += '\n    storm-control multicast kbps 50000';
+                bridgeConfig += '\n    storm-control broadcast kbps 50000';
+                bridgeConfig += '\n    split-horizon group';
+                bridgeConfig += '\n   !';
+                bridgeConfig += '\n  !';
+            });
+            
+            bridgeConfig += '\n !\n!';
+            return bridgeConfig;
+        }
+
+        function generateVerificationCommands() {
+            const oldConfig = document.getElementById('oldConfig').value.trim();
+            const pwEtherId = document.getElementById('pwEtherId').value.trim();
+            
+            if (!oldConfig || !pwEtherId) return '';
+            
+            console.log('=== STARTING INTERFACE PARSING ===');
+            
+            // Use the same approach as your Python code - split by "!" and parse each block
+            const blocks = oldConfig.trim().split('!\n');
+            const interfaceConfigs = [];
+            const specialCtags = [];
+            
+            console.log('Total blocks found:', blocks.length);
+            
+            for (let i = 0; i < blocks.length; i++) {
+                const block = blocks[i];
+                console.log(`Processing block ${i + 1}:`, block);
+                
+                // Extract interface, VRF, and IP info using regex (same as your Python code)
+                const intfMatch = block.match(/^interface\s+(\S+)/m);
+                const vrfMatch = block.match(/vrf\s+(\S+)/m);
+                const ipMatch = block.match(/ipv4 address\s+(\S+)\s+(\S+)/m);
+                
+                if (intfMatch && vrfMatch && ipMatch) {
+                    const interface = intfMatch[1];
+                    const vrf = vrfMatch[1];
+                    const ip = ipMatch[1];
+                    const mask = ipMatch[2];
+                    
+                    console.log('Found complete config:', { interface, vrf, ip, mask });
+                    
+                    try {
+                        // Calculate usable IPs using the same logic as your Python code
+                        const usableIPs = calculateUsableIPs(ip, mask);
+                        
+                        interfaceConfigs.push({
+                            interface: interface,
+                            vrf: vrf,
+                            ip: ip,
+                            subnet: mask,
+                            ping_ips: usableIPs
+                        });
+                        
+                        console.log('Added interface config with ping IPs:', usableIPs);
+                    } catch (error) {
+                        console.error('Error parsing IP/mask:', error);
+                    }
+                } else {
+                    console.log('Incomplete block - missing:', {
+                        interface: !!intfMatch,
+                        vrf: !!vrfMatch,
+                        ip: !!ipMatch
+                    });
+                }
+            }
+            
+            console.log('=== INTERFACE PARSING COMPLETE ===');
+            console.log('Total interface configs found:', interfaceConfigs.length);
+            console.log('Interface configs:', interfaceConfigs);
+            
+            // Check for interfaces with ctags 502 or 504
+            blocks.forEach(block => {
+                const intfMatch = block.match(/^interface\s+(\S+)/m);
+                if (intfMatch) {
+                    const fullInterface = intfMatch[1];
+                    // Extract subinterface number (last part after the dot)
+                    const dotIndex = fullInterface.lastIndexOf('.');
+                    if (dotIndex !== -1) {
+                        const subinterfaceNum = fullInterface.substring(dotIndex + 1);
+                        // Extract only the last 3 digits
+                        const ctag = subinterfaceNum.length > 3 ? subinterfaceNum.slice(-3) : subinterfaceNum;
+                        
+                        if (ctag === '502' || ctag === '504') {
+                            specialCtags.push({
+                                ctag: ctag,
+                                originalInterface: fullInterface,
+                                newInterface: `PW-Ether ${pwEtherId}.${ctag}`
+                            });
+                        }
+                    }
+                }
+            });
+            
+            let verificationCommands = '';
+            
+            // Generate IP and VRF verification commands
+            if (interfaceConfigs.length > 0) {
+                verificationCommands += '\n### show arp ###\n';
+                interfaceConfigs.forEach(config => {
+                    verificationCommands += `show arp vrf ${config.vrf} | i ${config.interface}\n`;
+                });
+                
+                verificationCommands += '\n### show ip route ###\n';
+                interfaceConfigs.forEach(config => {
+                    // Extract network portion (first 3 octets)
+                    const ipParts = config.ip.split('.');
+                    const networkPortion = ipParts.slice(0, 3).join('.') + '.';
+                    verificationCommands += `show ip route vrf ${config.vrf} | i ${networkPortion}\n`;
+                });
+                
+                verificationCommands += '\n### show run static ###\n';
+                interfaceConfigs.forEach(config => {
+                    verificationCommands += `show run router static vrf ${config.vrf} | i ${config.interface}\n`;
+                });
+                
+                verificationCommands += '\n### show run bgp ###\n';
+                interfaceConfigs.forEach(config => {
+                    // Extract network portion (first 3 octets)
+                    const ipParts = config.ip.split('.');
+                    const networkPortion = ipParts.slice(0, 3).join('.') + '.';
+                    verificationCommands += `show run router bgp 17627 vrf ${config.vrf} | i ${networkPortion}\n`;
+                });
+                
+                verificationCommands += '\n### ping (all other usable IPs) ###\n';
+                interfaceConfigs.forEach(config => {
+                    console.log('Processing config for ping commands:', config);
+                    // Use the pre-calculated ping IPs
+                    const pingCommands = generatePingCommandsFromList(config.ping_ips, config.vrf);
+                    console.log('Generated ping commands:', pingCommands);
+                    verificationCommands += pingCommands;
+                });
+            } else {
+                console.log('No interface configs found - no verification commands will be generated');
+            }
+            
+            // Generate L2VPN verification commands for ctags 502/504
+            if (specialCtags.length > 0) {
+                verificationCommands += '\n#### D_NET VERIFICATIONS ####\n\n';
+                
+                specialCtags.forEach(ctagInfo => {
+                    // Commands for original interface
+                    verificationCommands += `sh l2vpn forwarding bridge-domain D_NET:ME_DNET_BNG_${ctagInfo.ctag} mac-address location 0/0/CPU0 | i ${ctagInfo.originalInterface}\n`;
+                    verificationCommands += `sh l2vpn bridge group D_NET bd-name ME_DNET_BNG_${ctagInfo.ctag} interface gigabitEthernet ${ctagInfo.originalInterface}\n`;
+                    verificationCommands += `sh run l2vpn bridge group D_NET bridge-domain ME_DNET_BNG_${ctagInfo.ctag} interface gigabitEthernet ${ctagInfo.originalInterface}\n\n`;
+                    
+                    // Commands for new PW-Ether interface
+                    verificationCommands += `sh l2vpn forwarding bridge-domain D_NET:ME_DNET_${ctagInfo.ctag} mac-address location 0/0/CPU0 | i  ${pwEtherId}.${ctagInfo.ctag}\n`;
+                    verificationCommands += `sh l2vpn bridge group D_NET bd-name ME_DNET_${ctagInfo.ctag} interface PW-Ether ${pwEtherId}.${ctagInfo.ctag}\n`;
+                    verificationCommands += `sh run l2vpn bridge group D_NET bridge-domain ME_DNET_${ctagInfo.ctag} interface PW-Ether ${pwEtherId}.${ctagInfo.ctag}\n\n`;
+                });
+            }
+            
+            console.log('=== VERIFICATION COMMANDS GENERATION COMPLETE ===');
+            return verificationCommands;
+        }
+        
+        function generatePingCommands(ip, subnet, vrf) {
+            let pingCommands = '';
+            
+            console.log('generatePingCommands called with:', { ip, subnet, vrf }); // Debug log
+            
+            // Parse IP and subnet
+            const ipParts = ip.split('.').map(Number);
+            const subnetParts = subnet.split('.').map(Number);
+            
+            console.log('Parsed IP parts:', ipParts); // Debug log
+            console.log('Parsed subnet parts:', subnetParts); // Debug log
+            
+            // Calculate network address
+            const networkAddress = ipParts.map((part, index) => part & subnetParts[index]);
+            console.log('Calculated network address:', networkAddress); // Debug log
+            
+            // Calculate subnet mask in CIDR notation (e.g., 255.255.255.252 = /30)
+            let cidrMask = 0;
+            for (let i = 0; i < 4; i++) {
+                let octet = subnetParts[i];
+                let bitCount = 0;
+                while (octet > 0) {
+                    if (octet & 128) bitCount++;
+                    octet = (octet << 1) & 255;
+                }
+                cidrMask += bitCount;
+            }
+            
+            console.log('Calculated CIDR mask:', cidrMask); // Debug log
+            
+            // Calculate number of usable host addresses
+            const numHosts = Math.pow(2, 32 - cidrMask) - 2; // Subtract 2 for network and broadcast
+            console.log('Number of usable hosts:', numHosts); // Debug log
+            
+            // Generate ping commands for ALL usable host IPs (not limited to 10)
+            for (let i = 1; i < numHosts; i++) {
+                // Calculate host IP by adding increment to network address
+                let hostIP = [...networkAddress];
+                let increment = i;
+                
+                // Add increment to the appropriate octet(s)
+                for (let j = 3; j >= 0 && increment > 0; j--) {
+                    const maxInOctet = 255 - networkAddress[j];
+                    const addToOctet = Math.min(increment, maxInOctet);
+                    hostIP[j] += addToOctet;
+                    increment -= addToOctet;
+                }
+                
+                // Skip the original IP
+                if (hostIP.join('.') === ip) continue;
+                
+                pingCommands += `ping vrf ${vrf} ${hostIP.join('.')}\n`;
+            }
+            
+            console.log('Final ping commands generated:', pingCommands); // Debug log
+            return pingCommands;
+        }
+        
+        // Calculate usable IPs using the same logic as your Python code
+        function calculateUsableIPs(ip, mask) {
+            console.log('calculateUsableIPs called with:', { ip, mask });
+            
+            try {
+                // Parse IP and mask
+                const ipParts = ip.split('.').map(Number);
+                const maskParts = mask.split('.').map(Number);
+                
+                // Calculate network address (same as Python's ipaddress.IPv4Network)
+                const networkAddress = ipParts.map((part, index) => part & maskParts[index]);
+                
+                // Calculate CIDR notation
+                let cidrBits = 0;
+                for (let i = 0; i < 4; i++) {
+                    let octet = maskParts[i];
+                    let bitCount = 0;
+                    while (octet > 0) {
+                        if (octet & 128) bitCount++;
+                        octet = (octet << 1) & 255;
+                    }
+                    cidrBits += bitCount;
+                }
+                
+                console.log('Network address:', networkAddress.join('.'));
+                console.log('CIDR bits:', cidrBits);
+                
+                // Calculate total addresses in subnet
+                const totalAddresses = Math.pow(2, 32 - cidrBits);
+                const usableAddresses = totalAddresses - 2; // Subtract network and broadcast
+                
+                console.log('Total addresses:', totalAddresses, 'Usable addresses:', usableAddresses);
+                
+                // Generate all usable host IPs (excluding the interface IP)
+                const usableIPs = [];
+                for (let i = 1; i < totalAddresses - 1; i++) {
+                    // Calculate host IP by adding increment to network address
+                    let hostIP = [...networkAddress];
+                    let increment = i;
+                    
+                    // Add increment to the appropriate octet(s)
+                    for (let j = 3; j >= 0 && increment > 0; j--) {
+                        const maxInOctet = 255 - networkAddress[j];
+                        const addToOctet = Math.min(increment, maxInOctet);
+                        hostIP[j] += addToOctet;
+                        increment -= addToOctet;
+                    }
+                    
+                    const hostIPString = hostIP.join('.');
+                    
+                    // Skip the original interface IP
+                    if (hostIPString === ip) continue;
+                    
+                    usableIPs.push(hostIPString);
+                }
+                
+                console.log('Generated usable IPs:', usableIPs);
+                return usableIPs;
+                
+            } catch (error) {
+                console.error('Error in calculateUsableIPs:', error);
+                return [];
+            }
+        }
+        
+        // Generate ping commands from pre-calculated IP list
+        function generatePingCommandsFromList(pingIPs, vrf) {
+            let pingCommands = '';
+            
+            if (pingIPs && pingIPs.length > 0) {
+                pingIPs.forEach(ip => {
+                    pingCommands += `ping vrf ${vrf} ${ip}\n`;
+                });
+            }
+            
+            return pingCommands;
+        }
+        
+
+    </script>
+</body>
+</html> 

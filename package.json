@@ -1,0 +1,29 @@
+{
+  "name": "pwhe-config-generator",
+  "version": "1.0.0",
+  "description": "PW-HE Config Generator - Convert Cisco interfaces to PW-Ether format",
+  "main": "index.js",
+  "scripts": {
+    "dev": "firebase emulators:start",
+    "deploy": "firebase deploy",
+    "deploy:functions": "firebase deploy --only functions",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "logs": "firebase functions:log",
+    "test": "echo \"No tests specified\" && exit 1"
+  },
+  "keywords": [
+    "cisco",
+    "pw-ether",
+    "network",
+    "configuration",
+    "converter"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "firebase-tools": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

@@ -3,7 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cisco Interface Configuration Converter</title>
+    <title>PW-HE Config Generator</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Convert Cisco interface configurations to PW-Ether format">
+    <meta name="theme-color" content="#6750a4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PWHE Tool">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
+    <link rel="apple-touch-icon" href="/icons/icon-152x152.png">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -714,9 +730,9 @@
                                         </div>
                                         
                                         <div class="mt-2">
-                                            <button type="button" class="btn btn-danger w-100 ripple" onclick="clearAllInputs()" id="clearBtn">
-                                                <i class="fas fa-trash me-2"></i>Clear All
-                                            </button>
+                                                                                         <button type="button" class="btn btn-danger w-100 ripple" onclick="clearAllInputs()" id="clearBtn">
+                                                 <i class="fas fa-trash me-2"></i>Clear All
+                                             </button>
                                         </div>
                                         
                                         <div class="mt-2">
@@ -967,37 +983,104 @@
              }
          }
          
-                   function clearAllInputs() {
-              // Clear all input fields
-              document.getElementById('pwEtherId').value = '';
-              document.getElementById('csrIp').value = '';
-              document.getElementById('cxName').value = '';
-              document.getElementById('cxLocation').value = '';
-              document.getElementById('existingCsrConfig').value = '';
-              document.getElementById('oldConfig').value = '';
-              document.getElementById('staticRouteInput').value = '';
-              
-              // Clear all output textareas
-              document.getElementById('newConfig').value = '';
-              document.getElementById('finalConfig').value = '';
-              document.getElementById('convertedRoutes').value = '';
-              
-              // Reset button selections
-              const pwheButtons = document.querySelectorAll('[data-option]');
-              const huaweiButtons = document.querySelectorAll('[data-model]');
-              
-              pwheButtons.forEach(btn => {
-                  btn.classList.remove('btn-primary');
-                  btn.classList.add('btn-outline-primary');
-              });
-              
-              huaweiButtons.forEach(btn => {
-                  btn.classList.remove('btn-secondary');
-                  btn.classList.add('btn-outline-secondary');
-              });
-              
-              showAlert('All inputs and outputs cleared successfully!', 'success');
-          }
+                                        function clearAllInputs() {
+               console.log('Clear All button clicked - starting complete reset...');
+               
+               // Show confirmation dialog
+               if (confirm('Are you sure you want to clear everything and refresh the page?')) {
+                   // Clear all input fields
+                   const inputFields = [
+                       'pwEtherId',
+                       'csrIp', 
+                       'cxName',
+                       'cxLocation',
+                       'existingCsrConfig',
+                       'oldConfig'
+                   ];
+                   
+                   inputFields.forEach(fieldId => {
+                       const field = document.getElementById(fieldId);
+                       if (field) {
+                           field.value = '';
+                           console.log(`Cleared input field: ${fieldId}`);
+                       }
+                   });
+                   
+                   // Clear all output textareas with complete reset
+                   const outputFields = [
+                       'newConfig',
+                       'finalConfig'
+                   ];
+                   
+                   outputFields.forEach(fieldId => {
+                       const field = document.getElementById(fieldId);
+                       if (field) {
+                           // Force clear the value multiple ways
+                           field.value = '';
+                           field.textContent = '';
+                           field.innerHTML = '';
+                           
+                           // Reset textarea height to default
+                           field.style.height = 'auto';
+                           field.style.height = '400px'; // Reset to default height
+                           
+                           // Reset scroll position
+                           field.scrollTop = 0;
+                           field.scrollLeft = 0;
+                           
+                           // Force a DOM update
+                           field.dispatchEvent(new Event('input', { bubbles: true }));
+                           field.dispatchEvent(new Event('change', { bubbles: true }));
+                           
+                           console.log(`Cleared output field: ${fieldId}`);
+                       }
+                   });
+                   
+                   // Reset button selections
+                   const pwheButtons = document.querySelectorAll('[data-option]');
+                   const huaweiButtons = document.querySelectorAll('[data-model]');
+                   
+                   pwheButtons.forEach(btn => {
+                       btn.classList.remove('btn-primary');
+                       btn.classList.add('btn-outline-primary');
+                       console.log(`Reset PW-HE button: ${btn.getAttribute('data-option')}`);
+                   });
+                   
+                   huaweiButtons.forEach(btn => {
+                       btn.classList.remove('btn-secondary');
+                       btn.classList.add('btn-outline-secondary');
+                       console.log(`Reset Huawei button: ${btn.getAttribute('data-model')}`);
+                   });
+                   
+                   // Clear any existing alerts
+                   const alertContainer = document.getElementById('alertContainer');
+                   if (alertContainer) {
+                       alertContainer.innerHTML = '';
+                   }
+                   
+                   // Clear only configuration-related session data, preserve authentication
+                   const sessionKeys = Object.keys(sessionStorage);
+                   sessionKeys.forEach(key => {
+                       // Keep authentication-related keys, clear everything else
+                       if (!key.includes('auth') && !key.includes('login') && !key.includes('passcode') && !key.includes('access')) {
+                           sessionStorage.removeItem(key);
+                           console.log(`Cleared session key: ${key}`);
+                       }
+                   });
+                   console.log('Cleared configuration data, preserved authentication');
+                   
+                   // Clear all local storage
+                   if (typeof localStorage !== 'undefined') {
+                       localStorage.clear();
+                       console.log('Cleared all local storage');
+                   }
+                   
+                   // Show success message
+                   showAlert('All data cleared successfully! Ready for new configuration.', 'success');
+                   
+                   console.log('Clear All function completed - form reset successfully');
+               }
+            }
 
         // Auto-resize textareas (excluding fixed-size and large ones)
         document.addEventListener('DOMContentLoaded', function() {
@@ -1497,23 +1580,58 @@ ${generateVerificationCommands()}`;
             const lines = oldConfig.split('\n');
             const specialCtags = [];
             
-            // Check for interfaces with ctags 502 or 504
+            // Parse interface blocks to extract ctags from encapsulation commands
+            const interfaceBlocks = [];
+            let currentBlock = null;
+            
             lines.forEach(line => {
                 const trimmedLine = line.trim();
                 if (trimmedLine.startsWith('interface ')) {
-                    const match = trimmedLine.match(/interface\s+(GigabitEthernet|TenGigE|Tengig)\d+\/\d+\/\d+\/\d+\.(\d+)(\s+l2transport)?/);
-                    if (match) {
-                        const subinterfaceNum = match[2];
-                        // Extract only the last 3 digits
-                        const ctag = subinterfaceNum.length > 3 ? subinterfaceNum.slice(-3) : subinterfaceNum;
-                        
-                        if (ctag === '502' || ctag === '504') {
-                            specialCtags.push({
-                                ctag: ctag,
-                                originalInterface: trimmedLine,
-                                newInterface: `PW-Ether ${pwEtherId}.${ctag}`
-                            });
+                    if (currentBlock) {
+                        interfaceBlocks.push(currentBlock);
+                    }
+                    currentBlock = {
+                        interfaceLine: trimmedLine,
+                        config: []
+                    };
+                } else if (currentBlock) {
+                    currentBlock.config.push(trimmedLine);
+                }
+            });
+            if (currentBlock) {
+                interfaceBlocks.push(currentBlock);
+            }
+            
+            // Check for interfaces with ctags 502 or 504
+            interfaceBlocks.forEach(block => {
+                const match = block.interfaceLine.match(/interface\s+(GigabitEthernet|TenGigE|Tengig)\d+\/\d+\/\d+\/\d+\.(\d+)(\s+l2transport)?/);
+                if (match) {
+                    const subinterfaceNum = match[2];
+                    
+                    // Extract ctag from encapsulation command
+                    let ctag = null;
+                    for (const configLine of block.config) {
+                        if (configLine.includes('encapsulation dot1q') && configLine.includes('second-dot1q')) {
+                            const ctagMatch = configLine.match(/encapsulation dot1q \d+ second-dot1q (\d+)/);
+                            if (ctagMatch) {
+                                ctag = ctagMatch[1];
+                                break;
+                            }
                         }
+                    }
+                    
+                    // Use ctag if found, otherwise fall back to subinterface number
+                    const interfaceSuffix = ctag || subinterfaceNum;
+                    
+                    // Check if the ctag ends with 502 or 504 (for 4+ digit ctags)
+                    if (interfaceSuffix.endsWith('502') || interfaceSuffix.endsWith('504')) {
+                        // Extract the last 3 digits for the bridge domain name
+                        const ctagSuffix = interfaceSuffix.slice(-3);
+                        specialCtags.push({
+                            ctag: ctagSuffix,
+                            originalInterface: block.interfaceLine,
+                            newInterface: `PW-Ether ${pwEtherId}.${interfaceSuffix}`
+                        });
                     }
                 }
             });
@@ -1607,14 +1725,31 @@ ${generateVerificationCommands()}`;
                     const dotIndex = fullInterface.lastIndexOf('.');
                     if (dotIndex !== -1) {
                         const subinterfaceNum = fullInterface.substring(dotIndex + 1);
-                        // Extract only the last 3 digits
-                        const ctag = subinterfaceNum.length > 3 ? subinterfaceNum.slice(-3) : subinterfaceNum;
                         
-                        if (ctag === '502' || ctag === '504') {
+                        // Extract ctag from encapsulation command in the block
+                        let ctag = null;
+                        const blockLines = block.split('\n');
+                        for (const line of blockLines) {
+                            if (line.includes('encapsulation dot1q') && line.includes('second-dot1q')) {
+                                const ctagMatch = line.match(/encapsulation dot1q \d+ second-dot1q (\d+)/);
+                                if (ctagMatch) {
+                                    ctag = ctagMatch[1];
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Use ctag if found, otherwise fall back to subinterface number
+                        const interfaceSuffix = ctag || subinterfaceNum;
+                        
+                        // Check if the ctag ends with 502 or 504 (for 4+ digit ctags)
+                        if (interfaceSuffix.endsWith('502') || interfaceSuffix.endsWith('504')) {
+                            // Extract the last 3 digits for the bridge domain name
+                            const ctagSuffix = interfaceSuffix.slice(-3);
                             specialCtags.push({
-                                ctag: ctag,
+                                ctag: ctagSuffix,
                                 originalInterface: fullInterface,
-                                newInterface: `PW-Ether ${pwEtherId}.${ctag}`
+                                newInterface: `PW-Ether ${pwEtherId}.${interfaceSuffix}`
                             });
                         }
                     }
@@ -1670,8 +1805,8 @@ ${generateVerificationCommands()}`;
                 specialCtags.forEach(ctagInfo => {
                     // Commands for original interface
                     verificationCommands += `sh l2vpn forwarding bridge-domain D_NET:ME_DNET_BNG_${ctagInfo.ctag} mac-address location 0/0/CPU0 | i ${ctagInfo.originalInterface}\n`;
-                    verificationCommands += `sh l2vpn bridge group D_NET bd-name ME_DNET_BNG_${ctagInfo.ctag} interface gigabitEthernet ${ctagInfo.originalInterface}\n`;
-                    verificationCommands += `sh run l2vpn bridge group D_NET bridge-domain ME_DNET_BNG_${ctagInfo.ctag} interface gigabitEthernet ${ctagInfo.originalInterface}\n\n`;
+                    verificationCommands += `sh l2vpn bridge group D_NET bd-name ME_DNET_BNG_${ctagInfo.ctag} interface ${ctagInfo.originalInterface}\n`;
+                    verificationCommands += `sh run l2vpn bridge group D_NET bridge-domain ME_DNET_BNG_${ctagInfo.ctag} interface ${ctagInfo.originalInterface}\n\n`;
                     
                     // Commands for new PW-Ether interface
                     verificationCommands += `sh l2vpn forwarding bridge-domain D_NET:ME_DNET_${ctagInfo.ctag} mac-address location 0/0/CPU0 | i  ${pwEtherId}.${ctagInfo.ctag}\n`;
@@ -1820,6 +1955,28 @@ ${generateVerificationCommands()}`;
             return pingCommands;
         }
         
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+        
+        // PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button or notification
+            console.log('App can be installed');
+        });
 
     </script>
 </body>

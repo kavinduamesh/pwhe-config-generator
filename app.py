@@ -44,19 +44,15 @@ def convert_interface_config(interface_config, pw_ether_id):
     lines = interface_config['config'].split('\n')
     new_lines = []
     
-    # Extract ctag from interface name for rewrite command logic
+    # Extract ctag from encapsulation command, not from interface name
     ctag = None
     for line in lines:
-        if line.strip().startswith('interface '):
-            # Extract the subinterface number (ctag)
-            match = re.match(r'interface\s+(GigabitEthernet|TenGigE|Tengig)\d+/\d+/\d+/\d+\.(\d+)(\s+l2transport)?', line.strip())
+        if 'encapsulation dot1q' in line and 'second-dot1q' in line:
+            # Extract the ctag (second dot1q value)
+            match = re.search(r'encapsulation dot1q \d+ second-dot1q (\d+)', line.strip())
             if match:
-                subinterface_num = match.group(2)
-                # Extract only the last 3 digits for the subinterface number
-                if len(subinterface_num) > 3:
-                    subinterface_num = subinterface_num[-3:]
-                ctag = subinterface_num
-            break
+                ctag = match.group(1)
+                break
     
     for line in lines:
         original_line = line
@@ -71,12 +67,11 @@ def convert_interface_config(interface_config, pw_ether_id):
             match = re.match(r'interface\s+(GigabitEthernet|TenGigE|Tengig)\d+/\d+/\d+/\d+\.(\d+)(\s+l2transport)?', line)
             if match:
                 interface_type, subinterface_num, l2transport = match.groups()
-                # Extract only the last 3 digits for the subinterface number
-                # If the number is longer than 3 digits, take the last 3
-                if len(subinterface_num) > 3:
-                    subinterface_num = subinterface_num[-3:]
+                # Use the ctag from encapsulation command for the new interface name
+                # If no ctag found, fall back to subinterface number
+                interface_suffix = ctag if ctag else subinterface_num
                 # Create new PW-Ether interface name
-                new_interface_name = f"interface PW-Ether {pw_ether_id}.{subinterface_num}"
+                new_interface_name = f"interface PW-Ether {pw_ether_id}.{interface_suffix}"
                 # Add l2transport if it was present in the original
                 if l2transport:
                     new_interface_name += l2transport
@@ -173,12 +168,22 @@ def generate_migration_section(interfaces, pw_ether_id):
         match = re.match(r'interface\s+(GigabitEthernet|TenGigE|Tengig)\d+/\d+/\d+/\d+\.(\d+)(\s+l2transport)?', interface['name'].strip())
         if match:
             interface_type, subinterface_num, l2transport = match.groups()
-            # Extract only the last 3 digits for the subinterface number
-            if len(subinterface_num) > 3:
-                subinterface_num = subinterface_num[-3:]
+            
+            # Extract ctag from encapsulation command in the interface config
+            ctag = None
+            config_lines = interface['config'].split('\n')
+            for config_line in config_lines:
+                if 'encapsulation dot1q' in config_line and 'second-dot1q' in config_line:
+                    ctag_match = re.search(r'encapsulation dot1q \d+ second-dot1q (\d+)', config_line.strip())
+                    if ctag_match:
+                        ctag = ctag_match.group(1)
+                        break
+            
+            # Use ctag if found, otherwise fall back to subinterface number
+            interface_suffix = ctag if ctag else subinterface_num
             
             # Add no shutdown command for new PW-Ether interface
-            new_interface_name = f"interface PW-Ether {pw_ether_id}.{subinterface_num}"
+            new_interface_name = f"interface PW-Ether {pw_ether_id}.{interface_suffix}"
             if l2transport:
                 new_interface_name += l2transport
             migration_lines.append(new_interface_name)
@@ -205,15 +210,28 @@ def generate_bridge_config(interfaces, pw_ether_id):
         match = re.match(r'interface\s+(GigabitEthernet|TenGigE|Tengig)\d+/\d+/\d+/\d+\.(\d+)(\s+l2transport)?', interface['name'].strip())
         if match:
             subinterface_num = match.group(2)
-            # Extract only the last 3 digits for the subinterface number
-            if len(subinterface_num) > 3:
-                subinterface_num = subinterface_num[-3:]
             
-            if subinterface_num in ['502', '504']:
+            # Extract ctag from encapsulation command in the interface config
+            ctag = None
+            config_lines = interface['config'].split('\n')
+            for config_line in config_lines:
+                if 'encapsulation dot1q' in config_line and 'second-dot1q' in config_line:
+                    ctag_match = re.search(r'encapsulation dot1q \d+ second-dot1q (\d+)', config_line.strip())
+                    if ctag_match:
+                        ctag = ctag_match.group(1)
+                        break
+            
+            # Use ctag if found, otherwise fall back to subinterface number
+            interface_suffix = ctag if ctag else subinterface_num
+            
+            # Check if the ctag ends with 502 or 504 (for 4+ digit ctags)
+            if interface_suffix.endswith('502') or interface_suffix.endswith('504'):
+                # Extract the last 3 digits for the bridge domain name
+                ctag_suffix = interface_suffix[-3:]
                 special_ctags.append({
-                    'ctag': subinterface_num,
+                    'ctag': ctag_suffix,
                     'original_interface': interface['name'].strip(),
-                    'new_interface': f"PW-Ether {pw_ether_id}.{subinterface_num}"
+                    'new_interface': f"PW-Ether {pw_ether_id}.{interface_suffix}"
                 })
     
     if not special_ctags:

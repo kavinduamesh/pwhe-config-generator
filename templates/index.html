@@ -1716,6 +1716,17 @@ ${generateVerificationCommands()}`;
             console.log('Total interface configs found:', interfaceConfigs.length);
             console.log('Interface configs:', interfaceConfigs);
             
+            // Debug: Log each interface config with its ping IPs
+            interfaceConfigs.forEach((config, index) => {
+                console.log(`Interface ${index + 1}:`, {
+                    interface: config.interface,
+                    vrf: config.vrf,
+                    ip: config.ip,
+                    ping_ips_count: config.ping_ips.length,
+                    ping_ips: config.ping_ips
+                });
+            });
+            
             // Check for interfaces with ctags 502 or 504
             blocks.forEach(block => {
                 const intfMatch = block.match(/^interface\s+(\S+)/m);
@@ -1762,8 +1773,18 @@ ${generateVerificationCommands()}`;
             if (interfaceConfigs.length > 0) {
                 verificationCommands += '\n### show arp ###\n';
                 interfaceConfigs.forEach(config => {
-                    verificationCommands += `show arp vrf ${config.vrf} | i ${config.interface}\n`;
+                    // Remove "GigabitEthernet" prefix from interface name
+                    const interfaceWithoutPrefix = config.interface.replace(/^GigabitEthernet/, '');
+                    verificationCommands += `show arp vrf ${config.vrf} | i ${interfaceWithoutPrefix}\n`;
                 });
+                
+                // Add duplicate show arp commands with PW-ID
+                if (pwEtherId) {
+                    verificationCommands += '\n### show arp (PW-ID) ###\n';
+                    interfaceConfigs.forEach(config => {
+                        verificationCommands += `show arp vrf ${config.vrf} | i ${pwEtherId}.\n`;
+                    });
+                }
                 
                 verificationCommands += '\n### show ip route ###\n';
                 interfaceConfigs.forEach(config => {
@@ -1787,11 +1808,12 @@ ${generateVerificationCommands()}`;
                 });
                 
                 verificationCommands += '\n### ping (all other usable IPs) ###\n';
-                interfaceConfigs.forEach(config => {
-                    console.log('Processing config for ping commands:', config);
+                interfaceConfigs.forEach((config, index) => {
+                    console.log(`Processing interface ${index + 1} for ping commands:`, config);
+                    console.log(`Ping IPs for ${config.interface}:`, config.ping_ips);
                     // Use the pre-calculated ping IPs
                     const pingCommands = generatePingCommandsFromList(config.ping_ips, config.vrf);
-                    console.log('Generated ping commands:', pingCommands);
+                    console.log(`Generated ping commands for ${config.interface}:`, pingCommands);
                     verificationCommands += pingCommands;
                 });
             } else {
@@ -1906,31 +1928,52 @@ ${generateVerificationCommands()}`;
                 
                 // Calculate total addresses in subnet
                 const totalAddresses = Math.pow(2, 32 - cidrBits);
-                const usableAddresses = totalAddresses - 2; // Subtract network and broadcast
                 
-                console.log('Total addresses:', totalAddresses, 'Usable addresses:', usableAddresses);
+                // Special case for /31 subnets (point-to-point links)
+                // In /31 subnets, both IPs are usable (no network/broadcast distinction)
+                let usableAddresses;
+                if (cidrBits === 31) {
+                    usableAddresses = 2; // Both IPs are usable in /31
+                } else {
+                    usableAddresses = totalAddresses - 2; // Subtract network and broadcast
+                }
+                
+                console.log('Total addresses:', totalAddresses, 'Usable addresses:', usableAddresses, 'CIDR bits:', cidrBits);
                 
                 // Generate all usable host IPs (excluding the interface IP)
                 const usableIPs = [];
-                for (let i = 1; i < totalAddresses - 1; i++) {
-                    // Calculate host IP by adding increment to network address
-                    let hostIP = [...networkAddress];
-                    let increment = i;
+                
+                // Convert network address to integer for easier calculation
+                const networkInt = (networkAddress[0] << 24) + (networkAddress[1] << 16) + (networkAddress[2] << 8) + networkAddress[3];
+                const interfaceInt = (ipParts[0] << 24) + (ipParts[1] << 16) + (ipParts[2] << 8) + ipParts[3];
+                
+                // Generate all host IPs in the subnet
+                let startIndex, endIndex;
+                if (cidrBits === 31) {
+                    // For /31, use all addresses (0 to totalAddresses-1)
+                    startIndex = 0;
+                    endIndex = totalAddresses;
+                } else {
+                    // For other subnets, skip network (0) and broadcast (totalAddresses-1)
+                    startIndex = 1;
+                    endIndex = totalAddresses - 1;
+                }
+                
+                for (let i = startIndex; i < endIndex; i++) {
+                    const hostInt = networkInt + i;
                     
-                    // Add increment to the appropriate octet(s)
-                    for (let j = 3; j >= 0 && increment > 0; j--) {
-                        const maxInOctet = 255 - networkAddress[j];
-                        const addToOctet = Math.min(increment, maxInOctet);
-                        hostIP[j] += addToOctet;
-                        increment -= addToOctet;
-                    }
-                    
-                    const hostIPString = hostIP.join('.');
+                    // Convert back to IP string
+                    const hostIP = [
+                        (hostInt >>> 24) & 255,
+                        (hostInt >>> 16) & 255,
+                        (hostInt >>> 8) & 255,
+                        hostInt & 255
+                    ].join('.');
                     
                     // Skip the original interface IP
-                    if (hostIPString === ip) continue;
+                    if (hostInt === interfaceInt) continue;
                     
-                    usableIPs.push(hostIPString);
+                    usableIPs.push(hostIP);
                 }
                 
                 console.log('Generated usable IPs:', usableIPs);
@@ -1950,9 +1993,76 @@ ${generateVerificationCommands()}`;
                 pingIPs.forEach(ip => {
                     pingCommands += `ping vrf ${vrf} ${ip}\n`;
                 });
+            } else {
+                console.log(`No ping IPs generated for VRF ${vrf}`);
             }
             
             return pingCommands;
+        }
+        
+        // Test function for debugging specific configuration
+        function testSpecificConfig() {
+            const testConfig = `interface GigabitEthernet0/0/0/17.1126110
+ description 994606638:CAMBIUM:10.209.164.179::CHEC:COL_01
+ mtu 1600
+ service-policy input 100M_POLICE_BE_IN
+ service-policy output 100M_SHAPE_PARENT
+ vrf ENT_INTERNET
+ ipv4 address 10.121.46.97 255.255.255.252
+ encapsulation dot1q 1126 second-dot1q 110
+ ipv4 access-group TRC_VOIP_BLOCK ingress
+ ipv4 access-group TRC_VOIP_BLOCK egress
+!
+interface GigabitEthernet0/0/0/17.11261370
+ description SYS:MGT:CAMBIUM:P2P:10.24.132.128:25g0/2/14:BELL_SOLUTIONSPVT_LTD:PORT_CITY
+ mtu 1600
+ service-policy input 2M_POLICE_DATA_IN
+ service-policy output 2M_SHAPE_PARENT
+ vrf BS_MANAGE
+ ipv4 address 10.209.164.177 255.255.255.248
+ encapsulation dot1q 1126 second-dot1q 1370
+!
+interface GigabitEthernet0/0/0/17.11263999
+ description SYS:MGT::BELL_SOLUTIONSPVT_LTD:PORT_CITY
+ mtu 1600
+ service-policy input 2M_POLICE_DATA_IN
+ service-policy output 2M_SHAPE_PARENT
+ vrf METRO_SWITCH_MGMT
+ ipv4 address 100.77.9.206 255.255.255.254
+ encapsulation dot1q 1126 second-dot1q 3999
+!`;
+
+            console.log('=== TESTING SPECIFIC CONFIGURATION ===');
+            
+            // Test each interface individually
+            const blocks = testConfig.trim().split('!\n');
+            console.log('Total blocks:', blocks.length);
+            
+            blocks.forEach((block, index) => {
+                console.log(`\n--- Block ${index + 1} ---`);
+                console.log('Block content:', block);
+                
+                const intfMatch = block.match(/^interface\s+(\S+)/m);
+                const vrfMatch = block.match(/vrf\s+(\S+)/m);
+                const ipMatch = block.match(/ipv4 address\s+(\S+)\s+(\S+)/m);
+                
+                console.log('Matches found:', {
+                    interface: intfMatch ? intfMatch[1] : 'NOT FOUND',
+                    vrf: vrfMatch ? vrfMatch[1] : 'NOT FOUND',
+                    ip: ipMatch ? ipMatch[1] : 'NOT FOUND',
+                    mask: ipMatch ? ipMatch[2] : 'NOT FOUND'
+                });
+                
+                if (intfMatch && vrfMatch && ipMatch) {
+                    const ip = ipMatch[1];
+                    const mask = ipMatch[2];
+                    console.log(`Testing IP calculation for ${ip}/${mask}`);
+                    
+                    const usableIPs = calculateUsableIPs(ip, mask);
+                    console.log(`Usable IPs for ${ip}/${mask}:`, usableIPs);
+                    console.log(`Count: ${usableIPs.length}`);
+                }
+            });
         }
         
         // PWA Service Worker Registration
